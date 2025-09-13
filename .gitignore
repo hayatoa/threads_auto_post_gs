@@ -1,0 +1,6 @@
+.env
+sa.json
+*.b64
+*.log
+.venv/
+__pycache__/
