@@ -15,7 +15,6 @@ jobs:
       group: threads-auto
       cancel-in-progress: false
 
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -31,7 +30,7 @@ jobs:
           pip install -r requirements.txt
 
       - name: Restore service account JSON
-        run: echo "${{ secrets.SA_JSON_BASE64 }}" | base64 -d > "${{ github.workspace }}/sa.json"
+        run: echo "${{ secrets.SA_JSON_BASE64 }}" | base64 -d > "${GITHUB_WORKSPACE}/sa.json"
 
       - name: Create runtime .env
         run: |
@@ -48,7 +47,8 @@ jobs:
         run: sleep $(( RANDOM % 1800 ))
 
       - name: Post exactly one row (head)
-        env:
-          GOOGLE_APPLICATION_CREDENTIALS: ${{ github.workspace }}/sa.json
-          GSPREAD_SERVICE_ACCOUNT_FILE: ${{ github.workspace }}/sa.json
-        run: python main_gsheet.py --mode batch --max-per-run 1
+        run: |
+          export GOOGLE_APPLICATION_CREDENTIALS="${GITHUB_WORKSPACE}/sa.json"
+          export GSPREAD_SERVICE_ACCOUNT_FILE="${GITHUB_WORKSPACE}/sa.json"
+          ls -l "$GSPREAD_SERVICE_ACCOUNT_FILE" || (echo "sa.json missing"; exit 1)
+          python main_gsheet.py --mode batch --max-per-run 1
