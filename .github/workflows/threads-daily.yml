@@ -24,11 +24,13 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Restore service account JSON
-        env:
-          SA_JSON_BASE64: ${{ secrets.SA_JSON_BASE64 }}
+      - name: Install deps
         run: |
-          echo "$SA_JSON_BASE64" | base64 -d > "$HOME/sa.json"
+          python -m pip install -U pip
+          pip install -r requirements.txt
+
+      - name: Restore service account JSON
+        run: echo "${{ secrets.SA_JSON_BASE64 }}" | base64 -d > "${{ github.workspace }}/sa.json"
 
       - name: Create runtime .env
         run: |
@@ -39,16 +41,11 @@ jobs:
           SHEET_TAB=${{ secrets.SHEET_TAB }}
           EOF
 
-      - name: Install deps
-        run: |
-          python -m pip install -U pip
-          pip install -r requirements.txt
-
       - name: Random delay within 30min
         run: sleep $(( RANDOM % 1800 ))
 
       - name: Post exactly one row (head)
-        run: |
-          export GOOGLE_APPLICATION_CREDENTIALS="$HOME/sa.json"
-          export GSPREAD_SERVICE_ACCOUNT_FILE="$HOME/sa.json"
-          python main_gsheet.py --mode batch --max-per-run 1
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ github.workspace }}/sa.json
+          GSPREAD_SERVICE_ACCOUNT_FILE: ${{ github.workspace }}/sa.json
+        run: python main_gsheet.py --mode batch --max-per-run 1
