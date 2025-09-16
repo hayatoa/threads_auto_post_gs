@@ -48,7 +48,12 @@ jobs:
 
       - name: Post exactly one row (head)
         run: |
+          # 鍵の絶対パスを “シェルで” export（ここなら確実に展開される）
           export GOOGLE_APPLICATION_CREDENTIALS="${GITHUB_WORKSPACE}/sa.json"
           export GSPREAD_SERVICE_ACCOUNT_FILE="${GITHUB_WORKSPACE}/sa.json"
-          ls -l "$GSPREAD_SERVICE_ACCOUNT_FILE" || (echo "sa.json missing"; exit 1)
+
+          # 念のため存在確認（ログに出ます）
+          echo "Using SA file at: ${GITHUB_WORKSPACE}/sa.json"
+          ls -l "${GITHUB_WORKSPACE}/sa.json" || (echo "sa.json missing"; exit 1)
+
           python main_gsheet.py --mode batch --max-per-run 1
