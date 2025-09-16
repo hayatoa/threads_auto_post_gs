@@ -10,10 +10,11 @@ on:
 jobs:
   post:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 60
     concurrency:
       group: threads-auto
       cancel-in-progress: false
+
 
     steps:
       - name: Checkout
@@ -41,7 +42,9 @@ jobs:
           SHEET_TAB=${{ secrets.SHEET_TAB }}
           EOF
 
-      - name: Random delay within 30min
+      - name: Random delay within 30min (skip on manual runs)
+        if: github.event_name == 'schedule'
+        timeout-minutes: 40
         run: sleep $(( RANDOM % 1800 ))
 
       - name: Post exactly one row (head)
