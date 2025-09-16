@@ -48,7 +48,7 @@ jobs:
         run: sleep $(( RANDOM % 1800 ))
 
       - name: Post exactly one row (head)
-        env:
-          GOOGLE_APPLICATION_CREDENTIALS: $HOME/sa.json
-          GSPREAD_SERVICE_ACCOUNT_FILE: $HOME/sa.json
-        run: python main_gsheet.py --mode batch --max-per-run 1
+        run: |
+          export GOOGLE_APPLICATION_CREDENTIALS="$HOME/sa.json"
+          export GSPREAD_SERVICE_ACCOUNT_FILE="$HOME/sa.json"
+          python main_gsheet.py --mode batch --max-per-run 1
