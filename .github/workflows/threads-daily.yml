@@ -7,7 +7,7 @@ on:
     - cron: '0 17 * * *'   # JST 26:00
   workflow_dispatch:
 
-# 先行ランをキャンセルしない（冗長ラン対策）
+# 先行ランをキャンセルしない（冗長キャンセル防止）
 concurrency:
   group: threads-auto
   cancel-in-progress: false
@@ -46,7 +46,17 @@ jobs:
           SHEET_TAB=${{ secrets.SHEET_TAB }}
           EOF
 
-      # ★検証のため“待機なし”。通るのを確認してから戻します
+      - name: Random delay within 30min (skip on manual runs)
+        if: github.event_name == 'schedule'
+        timeout-minutes: 40
+        run: |
+          MAX=$(( RANDOM % 1800 ))   # 0〜1800秒
+          echo "Random wait: ${MAX}s"
+          while [ "$MAX" -gt 0 ]; do
+            CHUNK=$(( MAX>60 ? 60 : MAX ))
+            sleep "$CHUNK"
+            MAX=$(( MAX-CHUNK ))
+          done
 
       - name: Post exactly one row (head)
         timeout-minutes: 20
