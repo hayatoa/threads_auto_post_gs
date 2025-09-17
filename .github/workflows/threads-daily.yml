@@ -49,11 +49,6 @@ jobs:
           SHEET_TAB=${{ secrets.SHEET_TAB }}
           EOF
 
-      - name: Random delay within 30min (skip on manual runs)
-        if: github.event_name == 'schedule'
-        timeout-minutes: 40
-        run: sleep $(( RANDOM % 1800 ))
-
       - name: Post exactly one row (head)
         run: python main_gsheet.py --mode batch --max-per-run 1
 
