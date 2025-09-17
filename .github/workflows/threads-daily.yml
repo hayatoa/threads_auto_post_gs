@@ -30,7 +30,15 @@ jobs:
           pip install -r requirements.txt
 
       - name: Restore service account JSON
-        run: echo "${{ secrets.SA_JSON_BASE64 }}" | base64 -d > "${GITHUB_WORKSPACE}/sa.json"
+        run: |
+          set -eu
+          mkdir -p "$HOME/.config/gspread"
+          # まず作業ディレクトリに保存
+          echo "${{ secrets.SA_JSON_BASE64 }}" | base64 -d > "${GITHUB_WORKSPACE}/sa.json"
+          # gspreadのデフォルト検索先にもコピー（これが決め手）
+          install -m 600 "${GITHUB_WORKSPACE}/sa.json" "$HOME/.config/gspread/service_account.json"
+          # 存在確認（中身は出さない）
+          ls -l "$HOME/.config/gspread"
 
       - name: Create runtime .env
         run: |
@@ -47,11 +55,8 @@ jobs:
         run: sleep $(( RANDOM % 1800 ))
 
       - name: Post exactly one row (head)
-        run: |
-          # ここで “シェルで” export（確実に絶対パスに展開される）
-          export GOOGLE_APPLICATION_CREDENTIALS="${GITHUB_WORKSPACE}/sa.json"
-          export GSPREAD_SERVICE_ACCOUNT_FILE="${GITHUB_WORKSPACE}/sa.json"
-          # 念のため存在確認（ファイル名だけ。中身は出さない）
+        run: python main_gsheet.py --mode batch --max-per-run 1
+
           ls -l "${GITHUB_WORKSPACE}/sa.json" || (echo "sa.json missing"; exit 1)
 
           python main_gsheet.py --mode batch --max-per-run 1
