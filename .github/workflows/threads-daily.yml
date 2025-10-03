@@ -2,6 +2,7 @@ name: Threads daily posts
 
 on:
   schedule:
+    - cron: '0 9 * * *'    # JST 18:00
     - cron: '40 11 * * *'  # JST 20:40
     - cron: '0 15 * * *'   # JST 24:00
     - cron: '0 17 * * *'   # JST 26:00
